@@ -69,6 +69,14 @@ final class AssociationListViewModel {
         return rows.first(where: { selection.contains($0.normalizedExtension) })
     }
 
+    func selectFirstRowIfNeeded() {
+        guard selection.isEmpty, let firstRow = visibleRows.first else {
+            return
+        }
+
+        selection = [firstRow.normalizedExtension]
+    }
+
     func load() async {
         phase = .loading
 
