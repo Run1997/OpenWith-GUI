@@ -43,12 +43,21 @@ CONTENTS_DIR="$APP_BUNDLE_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 PLIST_PATH="$CONTENTS_DIR/Info.plist"
+ICON_SOURCE_PATH="$ROOT_DIR/Assets/AppIcon.icns"
+ICON_TARGET_NAME="AppIcon.icns"
+
+if [[ ! -f "$ICON_SOURCE_PATH" ]]; then
+    echo "App icon not found at: $ICON_SOURCE_PATH" >&2
+    echo "Run: swift scripts/generate-app-icon.swift" >&2
+    exit 1
+fi
 
 rm -rf "$APP_BUNDLE_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 
 cp "$BINARY_PATH" "$MACOS_DIR/$APP_NAME"
 chmod +x "$MACOS_DIR/$APP_NAME"
+cp "$ICON_SOURCE_PATH" "$RESOURCES_DIR/$ICON_TARGET_NAME"
 
 cat > "$PLIST_PATH" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -63,6 +72,8 @@ cat > "$PLIST_PATH" <<EOF
     <string>com.openwithgui.app</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleName</key>
     <string>$APP_NAME</string>
     <key>CFBundlePackageType</key>
