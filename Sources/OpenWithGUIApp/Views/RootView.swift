@@ -112,7 +112,12 @@ struct RootView: View {
                 title: "Set Selected Extensions",
                 candidateApps: [],
                 showsCandidateGrouping: false,
-                onSelect: { app in
+                leadingChoices: [],
+                onSelectChoice: { choice in
+                    guard let app = choice.appDescriptor else {
+                        return
+                    }
+
                     Task {
                         await viewModel.apply(app: app, to: Array(viewModel.selection).sorted())
                     }
@@ -130,7 +135,12 @@ struct RootView: View {
                 title: "Set Default App for .\(singleSelectionExtension ?? "")",
                 candidateApps: selectedRow?.candidateApps ?? [],
                 showsCandidateGrouping: true,
-                onSelect: { app in
+                leadingChoices: [],
+                onSelectChoice: { choice in
+                    guard let app = choice.appDescriptor else {
+                        return
+                    }
+
                     guard let normalizedExtension = singleSelectionExtension else {
                         return
                     }

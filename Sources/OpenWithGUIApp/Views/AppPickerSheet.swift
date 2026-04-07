@@ -6,7 +6,8 @@ struct AppPickerSheet: View {
     let title: String
     let candidateApps: [AppDescriptor]
     let showsCandidateGrouping: Bool
-    let onSelect: (AppDescriptor) -> Void
+    let leadingChoices: [AppPickerChoice]
+    let onSelectChoice: (AppPickerChoice) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
@@ -19,11 +20,35 @@ struct AppPickerSheet: View {
             TextField("Search apps", text: $searchText)
 
             List {
+                if !filteredLeadingChoices.isEmpty {
+                    Section {
+                        ForEach(filteredLeadingChoices) { choice in
+                            Button {
+                                onSelectChoice(choice)
+                                dismiss()
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "line.3.horizontal.decrease.circle")
+                                        .frame(width: 28, height: 28)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(choice.title)
+                                        Text(choice.subtitle)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
                 ForEach(sections) { section in
                     Section(section.title) {
                         ForEach(section.apps) { app in
                             Button {
-                                onSelect(app)
+                                onSelectChoice(.app(app))
                                 dismiss()
                             } label: {
                                 HStack(spacing: 12) {
@@ -56,6 +81,18 @@ struct AppPickerSheet: View {
         }
         .padding()
         .frame(width: 520, height: 480)
+    }
+
+    private var filteredLeadingChoices: [AppPickerChoice] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return leadingChoices.filter { choice in
+            guard !query.isEmpty else {
+                return true
+            }
+
+            return choice.title.lowercased().contains(query)
+                || choice.subtitle.lowercased().contains(query)
+        }
     }
 
     private var sections: [AppPickerSection] {
