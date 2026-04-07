@@ -23,6 +23,7 @@ final class AssociationListViewModel {
     var rows: [ExtensionAssociationRow] = []
     var availableApps: [AppDescriptor] = []
     var selection: Set<String> = []
+    var selectedDefaultAppBundleIdentifier: String?
     var searchText = ""
     var sort: Sort = .extensionAscending
     var phase: Phase = .idle
@@ -45,15 +46,36 @@ final class AssociationListViewModel {
                 || row.candidateApps.contains(where: { $0.displayName.lowercased().contains(query) })
         }
 
+        let defaultAppFilteredRows = filteredRows.filter { row in
+            guard let selectedDefaultAppBundleIdentifier else {
+                return true
+            }
+
+            return row.currentDefaultApp?.bundleIdentifier == selectedDefaultAppBundleIdentifier
+        }
+
         switch sort {
         case .extensionAscending:
-            return filteredRows.sorted { $0.normalizedExtension < $1.normalizedExtension }
+            return defaultAppFilteredRows.sorted { $0.normalizedExtension < $1.normalizedExtension }
         case .extensionDescending:
-            return filteredRows.sorted { $0.normalizedExtension > $1.normalizedExtension }
+            return defaultAppFilteredRows.sorted { $0.normalizedExtension > $1.normalizedExtension }
         case .defaultAppAscending:
-            return filteredRows.sorted {
+            return defaultAppFilteredRows.sorted {
                 ($0.currentDefaultApp?.displayName ?? "") < ($1.currentDefaultApp?.displayName ?? "")
             }
+        }
+    }
+
+    var defaultAppFilterOptions: [AppDescriptor] {
+        Dictionary(
+            rows.compactMap { row in
+                row.currentDefaultApp.map { ($0.bundleIdentifier, $0) }
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
+        .values
+        .sorted {
+            $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
         }
     }
 
@@ -75,6 +97,16 @@ final class AssociationListViewModel {
         }
 
         selection = [firstRow.normalizedExtension]
+    }
+
+    func applyDefaultAppFilter(_ app: AppDescriptor) {
+        selectedDefaultAppBundleIdentifier = app.bundleIdentifier
+        reconcileSelectionWithVisibleRows()
+    }
+
+    func clearDefaultAppFilter() {
+        selectedDefaultAppBundleIdentifier = nil
+        reconcileSelectionWithVisibleRows()
     }
 
     func load() async {
@@ -173,5 +205,19 @@ final class AssociationListViewModel {
         let successCount = writeResults.filter { $0.errorMessage == nil }.count
         let failureCount = writeResults.count - successCount
         return "\(successCount) succeeded, \(failureCount) failed"
+    }
+
+    private func reconcileSelectionWithVisibleRows() {
+        let visibleIdentifiers = Set(visibleRows.map(\.normalizedExtension))
+
+        if selection.isSubset(of: visibleIdentifiers), !selection.isEmpty {
+            return
+        }
+
+        if let firstRow = visibleRows.first {
+            selection = [firstRow.normalizedExtension]
+        } else {
+            selection = []
+        }
     }
 }
