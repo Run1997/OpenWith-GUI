@@ -20,67 +20,25 @@ Instead of going through Finder's `Get Info -> Open with -> Change All...` flow 
 - Shows candidate apps for a single extension before changing it.
 - Lets you add custom extensions and remove user-added ones.
 
-## Current Scope
-
-This first version focuses only on:
-
-- `file extension -> default app`
-
-It does not currently manage UTI / Uniform Type associations, folders, or URL schemes.
-
 ## Requirements
 
 - macOS 14 or later
-- Swift 6 toolchain / a recent Xcode that supports Swift 6
+- No Swift or Xcode installation is required to use the packaged app or DMG.
 
-## Build And Run
+## Install From DMG
 
-Build the app bundle:
+Download or open the DMG, then drag `OpenWithGUI.app` into `Applications`.
 
-```bash
-./scripts/package-macos-app.sh
-```
+If macOS blocks the app because it is from an unidentified developer, allow it manually:
 
-Build a release bundle:
+1. Drag `OpenWithGUI.app` into `Applications`.
+2. In Finder, right-click `OpenWithGUI.app`.
+3. Click `Open`.
+4. Click `Open` again in the confirmation dialog.
 
-```bash
-./scripts/package-macos-app.sh --release
-```
+You can also allow it from `System Settings -> Privacy & Security` if macOS shows a security warning there.
 
-Build and open it immediately:
-
-```bash
-./scripts/package-macos-app.sh --open
-```
-
-Build a distributable DMG:
-
-```bash
-./scripts/package-macos-dmg.sh --release
-```
-
-The generated app bundle will be placed at:
-
-```text
-dist/OpenWithGUI.app
-```
-
-The generated DMG will be placed at:
-
-```text
-dist/OpenWithGUI.dmg
-```
-
-## Project Structure
-
-```text
-Sources/OpenWithGUIApp    SwiftUI app, models, services, view models, views
-Tests/OpenWithGUIAppTests Unit tests
-scripts/                  Packaging helpers
-docs/assets/              README assets
-```
-
-## Why This Exists
+## Why It Exists
 
 macOS makes default-app management tedious:
 
@@ -91,6 +49,14 @@ macOS makes default-app management tedious:
 
 OpenWithGUI is meant to make that state visible and editable without requiring users to memorize bundle IDs or click through repeated Finder dialogs.
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Similar Projects
+
+- [ColeMei/openwith](https://github.com/ColeMei/openwith) - a Rust TUI project for managing macOS file extension associations from the terminal.
+
 ## Acknowledgements
 
-- linux.do
+- [linux.do](https://linux.do/)
